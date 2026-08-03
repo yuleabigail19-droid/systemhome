@@ -262,6 +262,22 @@ const DB = {
     return techs.filter(t => t.active);
   },
 
+  // --- Catalog (public, no auth) ---
+  getCatalog() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', this._baseUrl + '/catalog', false);
+    xhr.send();
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        return response?.catalog || [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  },
+
   // --- Inventory ---
   getInventory() {
     const result = this._request('GET', '/inventory');

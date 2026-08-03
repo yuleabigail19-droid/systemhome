@@ -31,6 +31,12 @@ def ensure_inventory_image_column(conn):
     if 'image_path' not in columns:
         conn.execute('ALTER TABLE inventory_items ADD COLUMN image_path TEXT')
         conn.commit()
+    if 'badge' not in columns:
+        conn.execute('ALTER TABLE inventory_items ADD COLUMN badge TEXT')
+        conn.commit()
+    if 'show_in_catalog' not in columns:
+        conn.execute('ALTER TABLE inventory_items ADD COLUMN show_in_catalog INTEGER NOT NULL DEFAULT 1')
+        conn.commit()
 
 
 def seed_default_data(conn):
@@ -121,10 +127,10 @@ def seed_default_data(conn):
     if inventory_count == 0:
         now = __import__('datetime').datetime.utcnow().isoformat()
         conn.executescript(f"""
-            INSERT INTO inventory_items (name, category, brand, model, stock, price, description, active, created_at, updated_at) VALUES
-            ('Cámara HD 1080p', 'camaras', 'Hikvision', 'DS-2CD1023G0-I', 10, 450000, 'Cámara exterior HD', 1, '{now}', '{now}'),
-            ('Kit Alarma Residencial', 'alarmas', 'Honeywell', 'Lynx Touch', 5, 890000, 'Panel y sensores', 1, '{now}', '{now}'),
-            ('Aire Split 12000 BTU', 'ac', 'Samsung', 'AR12', 4, 3450000, 'Aire acondicionado residencial', 1, '{now}', '{now}');
+            INSERT INTO inventory_items (name, category, brand, model, stock, price, description, badge, show_in_catalog, active, created_at, updated_at) VALUES
+            ('Cámara HD 1080p', 'camaras', 'Hikvision', 'DS-2CD1023G0-I', 10, 450000, 'Cámara exterior HD', 'Más vendido', 1, 1, '{now}', '{now}'),
+            ('Kit Alarma Residencial', 'alarmas', 'Honeywell', 'Lynx Touch', 5, 890000, 'Panel y sensores', 'Popular', 1, 1, '{now}', '{now}'),
+            ('Aire Split 12000 BTU', 'ac', 'Samsung', 'AR12', 4, 3450000, 'Aire acondicionado residencial', 'Oferta', 1, 1, '{now}', '{now}');
         """)
 
     client_count = conn.execute('SELECT COUNT(*) AS count FROM clients').fetchone()['count']

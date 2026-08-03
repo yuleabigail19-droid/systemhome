@@ -133,6 +133,8 @@ function formatInventoryItem(row) {
     stock: row.stock,
     price: row.price,
     description: row.description,
+    badge: row.badge || null,
+    showInCatalog: !!row.show_in_catalog,
     active: !!row.active,
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -439,29 +441,35 @@ app.post('/api/workorders/:id/complete', authMiddleware, (req, res) => {
   res.json({ workOrder: formatWorkOrder(updatedOrder) });
 });
 
+// Public catalog endpoint (no auth required - for client portal)
+app.get('/api/catalog', (req, res) => {
+  const rows = db.prepare('SELECT * FROM inventory_items WHERE active = 1 AND show_in_catalog = 1 AND stock > 0 ORDER BY id DESC').all();
+  res.json({ catalog: rows.map(formatInventoryItem) });
+});
+
 app.get('/api/inventory', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT * FROM inventory_items WHERE active = 1 ORDER BY id DESC').all();
   res.json({ inventory: rows.map(formatInventoryItem) });
 });
 
 app.post('/api/inventory', authMiddleware, requireRole(['admin','gerente','almacenista']), (req, res) => {
-  const { name, category, brand, model, stock = 0, price = 0, description = '' } = req.body;
+  const { name, category, brand, model, stock = 0, price = 0, description = '', badge = '', showInCatalog = true } = req.body;
   const now = new Date().toISOString();
   const result = db.prepare(`
-    INSERT INTO inventory_items (name, category, brand, model, stock, price, description, active, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
-  `).run(name, category || 'otro', brand || '', model || '', stock, price, description, now, now);
+    INSERT INTO inventory_items (name, category, brand, model, stock, price, description, badge, show_in_catalog, active, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+  `).run(name, category || 'otro', brand || '', model || '', stock, price, description, badge || '', showInCatalog ? 1 : 0, now, now);
   const item = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json({ inventoryItem: formatInventoryItem(item) });
 });
 
 app.put('/api/inventory/:id', authMiddleware, requireRole(['admin','gerente','almacenista']), (req, res) => {
   const itemId = Number(req.params.id);
-  const { name, category, brand, model, stock = 0, price = 0, description = '' } = req.body;
+  const { name, category, brand, model, stock = 0, price = 0, description = '', badge = '', showInCatalog = true } = req.body;
   const now = new Date().toISOString();
   db.prepare(`
-    UPDATE inventory_items SET name = ?, category = ?, brand = ?, model = ?, stock = ?, price = ?, description = ?, updated_at = ? WHERE id = ?
-  `).run(name, category || 'otro', brand || '', model || '', stock, price, description, now, itemId);
+    UPDATE inventory_items SET name = ?, category = ?, brand = ?, model = ?, stock = ?, price = ?, description = ?, badge = ?, show_in_catalog = ?, updated_at = ? WHERE id = ?
+  `).run(name, category || 'otro', brand || '', model || '', stock, price, description, badge || '', showInCatalog ? 1 : 0, now, itemId);
   const item = db.prepare('SELECT * FROM inventory_items WHERE id = ?').get(itemId);
   res.json({ inventoryItem: formatInventoryItem(item) });
 });

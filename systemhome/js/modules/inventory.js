@@ -66,6 +66,7 @@ const InventoryModule = {
                   <th>Modelo</th>
                   <th>Stock</th>
                   <th>Precio</th>
+                  <th>Catálogo</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -140,6 +141,23 @@ const InventoryModule = {
                 <label>Descripción</label>
                 <textarea class="form-control" id="invDescription" placeholder="Características adicionales..." rows="3"></textarea>
               </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Etiqueta / Badge (Catálogo)</label>
+                  <input type="text" class="form-control" id="invBadge" placeholder="Ej: Más vendido, Oferta, Premium, Popular...">
+                  <div class="form-note" style="font-size:12px;color:var(--gray-500);margin-top:6px;">Etiqueta que se muestra en el catálogo del portal de cliente.</div>
+                </div>
+                <div class="form-group">
+                  <label>Mostrar en Catálogo</label>
+                  <select class="form-control" id="invShowInCatalog">
+                    <option value="1">✅ Sí, mostrar en catálogo</option>
+                    <option value="0">❌ No mostrar en catálogo</option>
+                  </select>
+                  <div class="form-note" style="font-size:12px;color:var(--gray-500);margin-top:6px;">Controla si este producto aparece en el portal de cliente.</div>
+                </div>
+              </div>
+
               <div class="form-group">
                 <label>Imagen del Equipo</label>
                 <input type="file" class="form-control" id="invImage" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" />
@@ -221,6 +239,11 @@ const InventoryModule = {
         </td>
         <td><strong>${DB.formatCurrency(item.price || 0)}</strong></td>
         <td>
+          ${item.showInCatalog ? 
+            `<span class="badge badge-active"><span class="dot"></span> ${item.badge ? this.escapeHtml(item.badge) : 'Visible'}</span>` : 
+            `<span class="badge badge-rechazado"><span class="dot"></span> Oculto</span>`}
+        </td>
+        <td>
             <div class="actions">
             <button class="btn btn-sm btn-secondary" onclick="InventoryModule.edit(${item.id})" title="Editar">✏️</button>
             <button class="btn btn-sm btn-secondary" onclick="InventoryModule.openImageForItem(${item.id})" title="Editar imagen">🖼️</button>
@@ -275,6 +298,8 @@ const InventoryModule = {
             document.getElementById('invStock').value = item.stock || 0;
             document.getElementById('invPrice').value = item.price || 0;
             document.getElementById('invDescription').value = item.description || '';
+            document.getElementById('invBadge').value = item.badge || '';
+            document.getElementById('invShowInCatalog').value = item.showInCatalog ? '1' : '0';
             document.getElementById('invImage').value = '';
             this.setImagePreview(item.imageUrl || null);
         } else {
@@ -283,6 +308,8 @@ const InventoryModule = {
             document.getElementById('inventoryId').value = '';
             document.getElementById('invStock').value = 0;
             document.getElementById('invPrice').value = 0;
+            document.getElementById('invBadge').value = '';
+            document.getElementById('invShowInCatalog').value = '1';
             document.getElementById('invImage').value = '';
             this.setImagePreview(null);
         }
@@ -347,6 +374,8 @@ const InventoryModule = {
             stock: parseInt(document.getElementById('invStock').value) || 0,
             price: parseFloat(document.getElementById('invPrice').value) || 0,
             description: document.getElementById('invDescription').value.trim(),
+            badge: document.getElementById('invBadge')?.value.trim() || '',
+            showInCatalog: document.getElementById('invShowInCatalog')?.value === '1',
         };
 
         const id = parseInt(document.getElementById('inventoryId').value);

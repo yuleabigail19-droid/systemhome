@@ -25,6 +25,17 @@ function all(sql, params = []) {
 }
 
 function initSchema() {
+  // Migration: add catalog columns to inventory_items if missing
+  const invColumns = db.prepare("PRAGMA table_info(inventory_items)").all();
+  const hasBadge = invColumns.some(c => c.name === 'badge');
+  const hasShowInCatalog = invColumns.some(c => c.name === 'show_in_catalog');
+  if (!hasBadge) {
+    db.exec("ALTER TABLE inventory_items ADD COLUMN badge TEXT");
+  }
+  if (!hasShowInCatalog) {
+    db.exec("ALTER TABLE inventory_items ADD COLUMN show_in_catalog INTEGER NOT NULL DEFAULT 1");
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS roles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,6 +169,8 @@ function initSchema() {
       stock INTEGER NOT NULL DEFAULT 0,
       price REAL NOT NULL DEFAULT 0,
       description TEXT,
+      badge TEXT,
+      show_in_catalog INTEGER NOT NULL DEFAULT 1,
       active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -308,10 +321,10 @@ function seedData() {
   const inventoryCount = db.prepare('SELECT COUNT(*) as count FROM inventory_items').get().count;
   if (inventoryCount === 0) {
     db.exec(`
-      INSERT INTO inventory_items (name, category, brand, model, stock, price, description, active, created_at, updated_at) VALUES
-      ('Cámara HD 1080p', 'camaras', 'Hikvision', 'DS-2CD1023G0-I', 10, 450000, 'Cámara exterior HD', 1, '${now}', '${now}'),
-      ('Kit Alarma Residencial', 'alarmas', 'Honeywell', 'Lynx Touch', 5, 890000, 'Panel y sensores', 1, '${now}', '${now}'),
-      ('Aire Split 12000 BTU', 'ac', 'Samsung', 'AR12', 4, 3450000, 'Aire acondicionado residencial', 1, '${now}', '${now}');
+      INSERT INTO inventory_items (name, category, brand, model, stock, price, description, badge, show_in_catalog, active, created_at, updated_at) VALUES
+      ('Cámara HD 1080p', 'camaras', 'Hikvision', 'DS-2CD1023G0-I', 10, 450000, 'Cámara exterior HD', 'Más vendido', 1, 1, '${now}', '${now}'),
+      ('Kit Alarma Residencial', 'alarmas', 'Honeywell', 'Lynx Touch', 5, 890000, 'Panel y sensores', 'Popular', 1, 1, '${now}', '${now}'),
+      ('Aire Split 12000 BTU', 'ac', 'Samsung', 'AR12', 4, 3450000, 'Aire acondicionado residencial', 'Oferta', 1, 1, '${now}', '${now}');
     `);
   }
 

@@ -191,6 +191,8 @@ def format_inventory_item(row):
         'stock': row['stock'],
         'price': row['price'],
         'description': row['description'],
+        'badge': row['badge'] if 'badge' in row.keys() else None,
+        'showInCatalog': bool(row['show_in_catalog']) if 'show_in_catalog' in row.keys() else True,
         'imagePath': row['image_path'],
         'imageUrl': f'/uploads/{row["image_path"]}' if row['image_path'] else None,
         'active': bool(row['active']),
@@ -687,6 +689,16 @@ def complete_work_order(order_id):
         conn.close()
 
 
+@app.get('/api/catalog')
+def catalog():
+    conn = get_connection()
+    try:
+        rows = conn.execute('SELECT * FROM inventory_items WHERE active = 1 AND show_in_catalog = 1 AND stock > 0 ORDER BY id DESC').fetchall()
+        return jsonify({'catalog': [format_inventory_item(r) for r in rows]})
+    finally:
+        conn.close()
+
+
 @app.get('/api/inventory')
 def inventory():
     user = require_auth()
@@ -713,9 +725,11 @@ def create_inventory_item():
     stock = payload.get('stock', 0)
     price = payload.get('price', 0)
     description = payload.get('description') or ''
+    badge = payload.get('badge') or ''
+    show_in_catalog = 1 if payload.get('showInCatalog', True) else 0
     conn = get_connection()
     try:
-        cur = conn.execute('INSERT INTO inventory_items (name, category, brand, model, stock, price, description, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)', (name, category, brand, model, stock, price, description, now_iso(), now_iso()))
+        cur = conn.execute('INSERT INTO inventory_items (name, category, brand, model, stock, price, description, badge, show_in_catalog, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)', (name, category, brand, model, stock, price, description, badge, show_in_catalog, now_iso(), now_iso()))
         conn.commit()
         row = conn.execute('SELECT * FROM inventory_items WHERE id = ?', (cur.lastrowid,)).fetchone()
         return jsonify({'inventoryItem': format_inventory_item(row)}), 201
@@ -736,9 +750,11 @@ def update_inventory_item(item_id):
     stock = payload.get('stock', 0)
     price = payload.get('price', 0)
     description = payload.get('description') or ''
+    badge = payload.get('badge') or ''
+    show_in_catalog = 1 if payload.get('showInCatalog', True) else 0
     conn = get_connection()
     try:
-        conn.execute('UPDATE inventory_items SET name = ?, category = ?, brand = ?, model = ?, stock = ?, price = ?, description = ?, updated_at = ? WHERE id = ?', (name, category, brand, model, stock, price, description, now_iso(), item_id))
+        conn.execute('UPDATE inventory_items SET name = ?, category = ?, brand = ?, model = ?, stock = ?, price = ?, description = ?, badge = ?, show_in_catalog = ?, updated_at = ? WHERE id = ?', (name, category, brand, model, stock, price, description, badge, show_in_catalog, now_iso(), item_id))
         conn.commit()
         row = conn.execute('SELECT * FROM inventory_items WHERE id = ?', (item_id,)).fetchone()
         return jsonify({'inventoryItem': format_inventory_item(row)})

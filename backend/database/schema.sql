@@ -131,6 +131,8 @@ CREATE TABLE IF NOT EXISTS inventory_items (
   price REAL NOT NULL DEFAULT 0,
   description TEXT,
   image_path TEXT,
+  badge TEXT,
+  show_in_catalog INTEGER NOT NULL DEFAULT 1,
   active INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL

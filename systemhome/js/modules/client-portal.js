@@ -96,33 +96,11 @@ const ClientPortal = {
         const container = document.getElementById('client-catalog-view');
         if (!container) return;
 
-        // Catalog data - professional products
-        const catalog = [
-            // Cámaras
-            { id: 1, name: 'Cámara HD 1080p Exterior', category: 'camaras', brand: 'Hikvision', model: 'DS-2CD1023G0-I', price: 450000, desc: 'Cámara IP Full HD 1080p con visión nocturna y resistencia IP67 para exterior.', icon: '📷', badge: 'Más vendido' },
-            { id: 2, name: 'Cámara PTZ 360°', category: 'camaras', brand: 'Dahua', model: 'SD22204T-GN', price: 1250000, desc: 'Cámara PTZ con rotación 360°, zoom óptico 4x y seguimiento automático.', icon: '🔄', badge: 'Premium' },
-            { id: 3, name: 'Cámara Inalámbrica WiFi', category: 'camaras', brand: 'EZViz', model: 'C8C Pro', price: 320000, desc: 'Cámara WiFi para interiores con audio bidireccional y detección inteligente.', icon: '📱', badge: null },
-            // Alarmas
-            { id: 4, name: 'Kit Alarma Residencial', category: 'alarma', brand: 'Honeywell', model: 'Lynx Touch', price: 890000, desc: 'Kit completo con panel táctil, sensores de puerta y movimiento, sirena.', icon: '🔔', badge: 'Popular' },
-            { id: 5, name: 'Sensor de Movimiento', category: 'alarma', brand: 'Bosch', model: 'ISW-BPR1-WP', price: 145000, desc: 'Sensor infrarrojo pasivo con detección de mascotas y 12m de alcance.', icon: '👁️', badge: null },
-            // Aire Acondicionado
-            { id: 6, name: 'Aire Acondicionado Split 12000 BTU', category: 'ac', brand: 'Samsung', model: 'AR12RSFHBWK', price: 3450000, desc: 'Split frío/calor 12000 BTU con filtro anti-bacterias y control WiFi.', icon: '❄️', badge: 'Oferta' },
-            { id: 7, name: 'Aire Acondicionado Inverter 24000 BTU', category: 'ac', brand: 'Midea', model: 'MSAGU-24HRFN1', price: 5200000, desc: 'Inverter eficiente para espacios grandes con ahorro de hasta 60% de energía.', icon: '❄️', badge: null },
-            // Cercas Eléctricas
-            { id: 8, name: 'Cerca Eléctrica 10m', category: 'cerca', brand: 'Intellibox', model: 'IB-2000', price: 780000, desc: 'Kit de cerca eléctrica para 10 metros con alarmas y sensor de corte.', icon: '⚡', badge: null },
-            { id: 9, name: 'Cerca Eléctrica 20m + Sensor', category: 'cerca', brand: 'RoTEC', model: 'RT-5000', price: 1350000, desc: 'Sistema de cerca eléctrica con sensor perimetral y notificaciones al móvil.', icon: '⚡', badge: 'Recomendado' },
-            // Video Portero
-            { id: 10, name: 'Video Portero Táctil 7"', category: 'video', brand: 'Smanos', model: 'K1-Smart', price: 650000, desc: 'Pantalla táctil capacitiva 7", cámara HD nocturna y apertura remota.', icon: '📺', badge: null },
-            { id: 11, name: 'Kit Video Portero 2 Cámaras', category: 'video', brand: 'COMMAX', model: 'CDV-70N', price: 890000, desc: 'Video portero con 2 cámaras, panel táctil y soporte para 2 monitores.', icon: '🏠', badge: null },
-            // Cables y Accesorios
-            { id: 12, name: 'Cable UTP Cat6 x100m', category: 'cable', brand: 'Belden', model: '7812ENH', price: 280000, desc: 'Cable de red UTP categoría 6 de alta velocidad para cableado estructurado.', icon: '🔌', badge: null },
-            { id: 13, name: 'Cable Coaxial RG6 x50m', category: 'cable', brand: 'CommScope', model: 'RG6-U', price: 125000, desc: 'Cable coaxial para CCTV y señales de video de alta calidad.', icon: '📡', badge: null },
-            { id: 14, name: 'Switch PoE 8 Puertos', category: 'accesorio', brand: 'TP-Link', model: 'TL-SG1005P', price: 350000, desc: 'Switch PoE+ 8 puertos Gigabit para alimentar cámaras y dispositivos de red.', icon: '🔀', badge: null },
-            { id: 15, name: 'Kit Herramientas Instalación', category: 'herramienta', brand: 'Stanley', model: '56-695', price: 450000, desc: 'Kit profesional con ponchadora, crimpadora RJ45, pelacables y más.', icon: '🛠️', badge: null },
-        ];
+        // Get catalog from inventory (admin-controlled)
+        const catalog = DB.getCatalog();
 
         const categories = [
-            { id: 'camaras', label: '📷 Cámaras' },
+            { id: 'camara', label: '📷 Cámaras' },
             { id: 'alarma', label: '🔔 Alarmas' },
             { id: 'ac', label: '❄️ A/Acondicionado' },
             { id: 'cerca', label: '⚡ Cercas' },
@@ -130,6 +108,7 @@ const ClientPortal = {
             { id: 'cable', label: '🔌 Cables' },
             { id: 'accesorio', label: '🔧 Accesorios' },
             { id: 'herramienta', label: '🛠️ Herramientas' },
+            { id: 'otro', label: '📦 Otros' },
         ];
 
         const currentCat = this.currentCatalogFilter || 'all';
@@ -172,17 +151,24 @@ const ClientPortal = {
             </div>`;
         }
 
+        const categoryIcons = {
+            camara: '📷', alarma: '🔔', ac: '❄️', cerca: '⚡',
+            video: '📺', cable: '🔌', accesorio: '🔧', herramienta: '🛠️', otro: '📦'
+        };
+
         return items.map(item => `
         <div class="catalog-item">
             <div class="catalog-item-img" style="background:linear-gradient(135deg, var(--gray-100), var(--gray-200));">
-                ${item.badge ? `<span class="cat-badge">${item.badge}</span>` : ''}
-                <span style="font-size:64px;">${item.icon}</span>
+                ${item.badge ? `<span class="cat-badge">${this.escapeHtml(item.badge)}</span>` : ''}
+                ${item.imageUrl ? 
+                    `<img src="${item.imageUrl}" alt="${this.escapeHtml(item.name)}" style="max-width:100%;max-height:120px;object-fit:cover;border-radius:8px;">` : 
+                    `<span style="font-size:64px;">${categoryIcons[item.category] || '📦'}</span>`}
             </div>
             <div class="catalog-item-info">
                 <h4>${this.escapeHtml(item.name)}</h4>
-                <div class="item-brand">${this.escapeHtml(item.brand)} · ${this.escapeHtml(item.model)}</div>
-                <div class="item-desc">${this.escapeHtml(item.desc)}</div>
-                <div class="item-price">${DB.formatCurrency(item.price)}</div>
+                <div class="item-brand">${this.escapeHtml(item.brand || '')}${item.model ? ' · ' + this.escapeHtml(item.model) : ''}</div>
+                <div class="item-desc">${this.escapeHtml(item.description || '')}</div>
+                <div class="item-price">${DB.formatCurrency(item.price || 0)}</div>
                 <div class="item-cta">
                     <button class="btn btn-sm btn-primary" onclick="ClientPortal.requestProduct('${this.escapeHtml(item.name)}')">
                         📝 Solicitar Cotización
