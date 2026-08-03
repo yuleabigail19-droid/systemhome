@@ -28,6 +28,12 @@ const ClientPortal = {
         });
     },
 
+    refresh() {
+        App.showToast('🔄 Actualizando datos...', 'info');
+        this.render();
+        App.showToast('✅ Datos actualizados', 'success');
+    },
+
     renderWelcome() {
         const container = document.getElementById('client-welcome-view');
         if (!container) return;
@@ -50,6 +56,9 @@ const ClientPortal = {
                 </a>
                 <button class="btn btn-secondary" onclick="ClientPortal.navigate('catalog')" style="gap:8px;">
                     🛒 Ver Catálogo
+                </button>
+                <button class="btn btn-secondary" onclick="ClientPortal.refresh()" style="gap:8px;" title="Actualizar datos">
+                    🔄 Actualizar
                 </button>
             </div>
         </div>
