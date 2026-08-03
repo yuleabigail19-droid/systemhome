@@ -36,15 +36,22 @@ const ClientPortal = {
 
         container.innerHTML = `
         <div class="client-welcome">
-            <div class="welcome-logo" id="clientWelcomeLogo">
-                ${logo ? `<img src="${logo}" alt="SYSTEMHOME">` : 'SH'}
+            <div class="welcome-logo" id="clientWelcomeLogo" style="width:180px;height:180px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, var(--primary), var(--primary-dark));border-radius:50%;box-shadow:0 8px 24px rgba(0,0,0,0.15);overflow:hidden;">
+                ${logo ? `<img src="${logo}" alt="SYSTEMHOME" style="width:100%;height:100%;object-fit:cover;">` : '<span style="font-size:48px;font-weight:800;color:white;">SH</span>'}
             </div>
-            <h2>Bienvenido a SYSTEMHOME</h2>
-            <p>
-                Somos su aliado en soluciones tecnológicas para seguridad y confort.
-                Explora nuestro catálogo de productos y servicios, o solicita una
-                cotización personalizada para tu hogar o empresa.
+            <h2 style="font-size:28px;font-weight:800;color:var(--gray-900);margin-bottom:12px;">Bienvenido a SYSTEMHOME</h2>
+            <p style="font-size:16px;line-height:1.7;color:var(--gray-600);max-width:700px;margin:0 auto 8px;">
+                Somos una empresa dedicada a brindar <strong>soluciones integrales en seguridad, tecnología y servicios eléctricos</strong>,
+                ofreciendo productos de calidad e instalaciones profesionales para proteger tu hogar, negocio o empresa.
             </p>
+            <div style="margin-top:16px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+                <a href="tel:64595762" class="btn btn-primary" style="gap:8px;">
+                    📞 <strong>64595762</strong>
+                </a>
+                <button class="btn btn-secondary" onclick="ClientPortal.navigate('catalog')" style="gap:8px;">
+                    🛒 Ver Catálogo
+                </button>
+            </div>
         </div>
 
         <div class="client-services-grid">
@@ -244,8 +251,16 @@ const ClientPortal = {
                         placeholder="Describa detalladamente el servicio o producto que necesita..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Dirección del Servicio</label>
-                    <input type="text" class="form-control" id="clientReqAddress" placeholder="Dirección donde se requiere el servicio">
+                    <label>📍 Ubicación del Servicio</label>
+                    <div style="display:flex;gap:8px;margin-bottom:8px;">
+                        <input type="text" class="form-control" id="clientReqAddress" placeholder="Dirección (calle, número, referencia)" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" onclick="ClientPortal.getLocation()" title="Usar mi ubicación actual" style="white-space:nowrap;">
+                            📍 Usar mi ubicación
+                        </button>
+                    </div>
+                    <input type="text" class="form-control" id="clientReqLocation" placeholder="Pegar enlace de Google Maps o coordenadas (opcional)" style="margin-bottom:8px;">
+                    <div id="locationPreview" style="display:none;margin-top:8px;padding:10px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200);font-size:13px;color:var(--gray-600);"></div>
+                    <div class="form-note" style="font-size:12px;color:var(--gray-500);margin-top:6px;">Puedes usar tu ubicación actual o pegar un enlace de Google Maps para que sepamos exactamente dónde ir.</div>
                 </div>
                 <button class="btn btn-primary btn-lg" onclick="ClientPortal.submitRequest()" style="width:100%;justify-content:center;">
                     📨 Enviar Solicitud
@@ -277,16 +292,54 @@ const ClientPortal = {
         `;
     },
 
+    getLocation() {
+        if (!navigator.geolocation) {
+            App.showToast('Tu navegador no soporta geolocalización', 'warning');
+            return;
+        }
+        App.showToast('Obteniendo tu ubicación...', 'info');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                const locInput = document.getElementById('clientReqLocation');
+                if (locInput) locInput.value = mapsUrl;
+                const preview = document.getElementById('locationPreview');
+                if (preview) {
+                    preview.style.display = 'block';
+                    preview.innerHTML = `✅ Ubicación obtenida:<br><strong>Lat:</strong> ${lat.toFixed(6)}, <strong>Lng:</strong> ${lng.toFixed(6)}<br><a href="${mapsUrl}" target="_blank" style="color:var(--primary);">Ver en Google Maps</a>`;
+                }
+                App.showToast('✅ Ubicación obtenida correctamente', 'success');
+            },
+            (error) => {
+                let msg = 'No se pudo obtener la ubicación';
+                if (error.code === 1) msg = 'Permiso denegado. Activa la ubicación en tu navegador.';
+                else if (error.code === 2) msg = 'Ubicación no disponible. Intenta de nuevo.';
+                else if (error.code === 3) msg = 'Tiempo de espera agotado. Intenta de nuevo.';
+                App.showToast(msg, 'warning');
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    },
+
     submitRequest() {
         const name = document.getElementById('clientReqName')?.value.trim();
         const phone = document.getElementById('clientReqPhone')?.value.trim();
         const service = document.getElementById('clientReqService')?.value;
         const desc = document.getElementById('clientRequestDesc')?.value.trim();
+        const address = document.getElementById('clientReqAddress')?.value.trim() || '';
+        const location = document.getElementById('clientReqLocation')?.value.trim() || '';
 
         if (!name) { App.showToast('Ingrese su nombre', 'warning'); return; }
         if (!phone) { App.showToast('Ingrese su teléfono', 'warning'); return; }
         if (!service) { App.showToast('Seleccione un tipo de servicio', 'warning'); return; }
         if (!desc) { App.showToast('Describa lo que necesita', 'warning'); return; }
+
+        // Combine address and location into description
+        let fullDesc = desc;
+        if (address) fullDesc += `\n\n📍 Dirección: ${address}`;
+        if (location) fullDesc += `\n🗺️ Ubicación: ${location}`;
 
         // Create a budget as a client request
         const budget = {
@@ -294,9 +347,10 @@ const ClientPortal = {
             clientName: name,
             clientPhone: phone,
             clientEmail: document.getElementById('clientReqEmail')?.value.trim() || '',
-            clientAddress: document.getElementById('clientReqAddress')?.value.trim() || '',
+            clientAddress: address,
+            clientLocation: location,
             serviceType: service,
-            description: desc,
+            description: fullDesc,
             items: [{ concept: desc, qty: 1, price: 0 }],
             labor: 0,
             discount: 0,
@@ -312,7 +366,7 @@ const ClientPortal = {
                 name: name,
                 phone: phone,
                 email: document.getElementById('clientReqEmail')?.value.trim() || '',
-                address: document.getElementById('clientReqAddress')?.value.trim() || '',
+                address: address,
                 ruc: '',
                 type: 'persona',
             });
