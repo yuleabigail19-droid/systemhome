@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es-PY">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEMHOME - Sistema Integral de Gestión</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- ==================== LOGIN / LANDING PAGE ==================== -->
+    <div class="login-page" id="loginPage">
+        <div class="login-bg"></div>
+        <div class="login-container">
+            <!-- Left side - Brand -->
+            <div class="login-brand">
+                <div class="login-logo-area">
+                    <div class="login-logo" id="loginLogoDisplay">
+                        <img src="assets/LOGO.png" alt="SYSTEMHOME">
+                    </div>
+                </div>
+                <h1 class="login-title">SYSTEMHOME</h1>
+                <p class="login-subtitle">Sistema Integral de Gestión<br>Comercial y Técnica</p>
+                <p class="login-desc">
+                    Soluciones en: Cámaras de Vigilancia · Aire Acondicionado ·
+                    Sistemas de Alarma · Cercas Eléctricas · Video Portero ·
+                    Electricidad · Cableado Estructurado · Redes e Internet
+                </p>
+            </div>
+
+            <!-- Right side - Access -->
+            <div class="login-access">
+                <!-- ============ LOGIN FORM ============ -->
+                <div class="login-access-card" id="loginFormContainer">
+                    <div class="login-welcome">
+                        <h2>Iniciar Sesión</h2>
+                        <p>Ingrese sus credenciales para acceder al sistema</p>
+                    </div>
+
+                    <form id="loginForm" onsubmit="return Auth.handleLogin(event)">
+                        <div class="form-group">
+                            <label for="loginUsername">Usuario</label>
+                            <input type="text" id="loginUsername" class="form-control" placeholder="Nombre de usuario"
+                                required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Contraseña</label>
+                            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••"
+                                required autocomplete="current-password">
+                        </div>
+                        <div id="loginError" class="login-error" style="display:none;"></div>
+                        <button type="submit" class="login-btn login-btn-admin"
+                            style="width:100%;justify-content:center;border:none;cursor:pointer;">
+                            <span class="login-btn-text">
+                                <strong>Ingresar</strong>
+                            </span>
+                        </button>
+                    </form>
+
+                    <div class="login-register-link">
+                        <p>¿No tienes cuenta? <a href="#" onclick="Auth.showRegister()">Regístrate aquí</a></p>
+                    </div>
+
+                    <div class="login-footer-text">
+                        <p>© 2026 SYSTEMHOME - Todos los derechos reservados</p>
+                    </div>
+                </div>
+
+                <!-- ============ REGISTER FORM ============ -->
+                <div class="login-access-card" id="registerFormContainer" style="display:none;">
+                    <div class="login-welcome">
+                        <h2>Registro de Cliente</h2>
+                        <p>Cree su cuenta para acceder al portal del cliente</p>
+                    </div>
+
+                    <form id="registerForm" onsubmit="return Auth.handleRegister(event)">
+                        <div class="form-group">
+                            <label for="regName">Nombre Completo</label>
+                            <input type="text" id="regName" class="form-control" placeholder="Ej: Juan Pérez" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regEmail">Correo Electrónico</label>
+                            <input type="email" id="regEmail" class="form-control" placeholder="correo@ejemplo.com"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPhone">Teléfono</label>
+                            <input type="text" id="regPhone" class="form-control" placeholder="0991 123 456">
+                        </div>
+                        <div class="form-group">
+                            <label for="regUsername">Usuario</label>
+                            <input type="text" id="regUsername" class="form-control"
+                                placeholder="Elija un nombre de usuario" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Contraseña</label>
+                            <input type="password" id="regPassword" class="form-control"
+                                placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+                        </div>
+                        <div class="form-group">
+                            <label for="regConfirmPassword">Confirmar Contraseña</label>
+                            <input type="password" id="regConfirmPassword" class="form-control"
+                                placeholder="Repita la contraseña" required autocomplete="new-password">
+                        </div>
+                        <div id="registerError" class="login-error" style="display:none;"></div>
+                        <button type="submit" class="login-btn login-btn-client"
+                            style="width:100%;justify-content:center;border:none;cursor:pointer;">
+                            <span class="login-btn-text">
+                                <strong>Crear Cuenta</strong>
+                            </span>
+                        </button>
+                    </form>
+
+                    <div class="login-register-link">
+                        <p>¿Ya tienes cuenta? <a href="#" onclick="Auth.showLogin()">Inicia sesión aquí</a></p>
+                    </div>
+
+                    <div class="login-footer-text">
+                        <p>© 2026 SYSTEMHOME - Todos los derechos reservados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ADMIN PORTAL ==================== -->
+    <div class="app-container" id="adminPortal" style="display:none;">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-placeholder"><img src="assets/LOGO.png" alt="SYSTEMHOME"></div>
+                <div class="brand-text">
+                    <h1>SYSTEMHOME</h1>
+                    <span>Panel de Administración</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">Principal</div>
+                <a class="nav-item active" data-view="dashboard" title="Panel de Control">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+
+                <div class="nav-section">Gestión</div>
+                <a class="nav-item" data-view="clients" title="Clientes">
+                    <span class="nav-icon">👥</span> Clientes
+                </a>
+                <a class="nav-item" data-view="budgets" title="Presupuestos">
+                    <span class="nav-icon">📋</span> Presupuestos
+                </a>
+
+                <div class="nav-section">Operaciones</div>
+                <a class="nav-item" data-view="workorders" title="Órdenes de Trabajo">
+                    <span class="nav-icon">🔧</span> Órdenes de Trabajo
+                </a>
+                <a class="nav-item" data-view="inventory" title="Inventario">
+                    <span class="nav-icon">📦</span> Inventario
+                </a>
+                <a class="nav-item" data-view="maintenances" title="Mantenimientos">
+                    <span class="nav-icon">🛠️</span> Mantenimientos
+                </a>
+
+                <div class="nav-section">Sistema</div>
+                <a class="nav-item" data-view="settings" title="Configuración">
+                    <span class="nav-icon">⚙️</span> Configuración
+                </a>
+                <a class="nav-item" data-view="users" title="Usuarios">
+                    <span class="nav-icon">🔐</span> Usuarios
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user-info" id="sidebarUserInfo">
+                    <div class="user-avatar-sm" id="sidebarUserAvatar">A</div>
+                    <div class="user-meta">
+                        <div class="user-name" id="sidebarUserName">Administrador</div>
+                        <div class="user-role-badge" id="sidebarUserRole">admin</div>
+                    </div>
+                </div>
+                <a class="nav-item" style="color:#ef4444;border-left-color:transparent;" onclick="Auth.logout()"
+                    title="Cerrar sesión">
+                    <span class="nav-icon">🚪</span> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="header-btn" id="menuToggle" title="Menú" style="display:none;">☰</button>
+                    <h2 id="headerTitle">Panel de Control</h2>
+                    <span class="breadcrumb" id="breadcrumb">Inicio / Dashboard</span>
+                </div>
+                <div class="header-right">
+                    <button class="header-btn" title="Notificaciones"
+                        onclick="App.showToast('No hay notificaciones nuevas', 'info')">
+                        🔔
+                        <span class="notif-dot"></span>
+                    </button>
+                    <div class="user-info" onclick="App.navigate('settings')" style="cursor:pointer;">
+                        <div class="user-avatar" id="headerUserAvatar">A</div>
+                        <div class="user-details">
+                            <div class="name" id="headerUserName">Administrador</div>
+                            <div class="role" id="headerUserRole">SYSTEMHOME</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <section class="view-section active" id="dashboard-view"></section>
+                <section class="view-section" id="clients-view"></section>
+                <section class="view-section" id="budgets-view"></section>
+                <section class="view-section" id="workorders-view"></section>
+                <section class="view-section" id="inventory-view"></section>
+                <section class="view-section" id="maintenances-view"></section>
+                <section class="view-section" id="users-view"></section>
+                <section class="view-section" id="settings-view"></section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== CLIENT PORTAL ==================== -->
+    <div class="client-portal" id="clientPortal" style="display:none;">
+
+        <!-- Client Header -->
+        <header class="client-header">
+            <div class="client-header-inner">
+                <div class="client-header-left">
+                    <div class="client-logo-mini"><img src="assets/LOGO.png" alt="SYSTEMHOME"></div>
+                    <div class="client-header-title">
+                        <h1>SYSTEMHOME</h1>
+                        <span>Portal del Cliente</span>
+                    </div>
+                </div>
+                <div class="client-header-right">
+                    <div class="client-user-badge" id="clientUserBadge">
+                        <span id="clientUserNameDisplay">Usuario</span>
+                    </div>
+                    <button class="client-nav-btn active" data-clientview="welcome"
+                        onclick="ClientPortal.navigate('welcome')">🏠 Inicio</button>
+                    <button class="client-nav-btn" data-clientview="catalog"
+                        onclick="ClientPortal.navigate('catalog')">📦 Catálogo</button>
+                    <button class="client-nav-btn" data-clientview="requests"
+                        onclick="ClientPortal.navigate('requests')">📝 Mis Solicitudes</button>
+                    <button class="client-nav-btn client-btn-logout" onclick="Auth.logout()">🚪 Salir</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Client Content -->
+        <div class="client-content">
+            <section class="client-section active" id="client-welcome-view"></section>
+            <section class="client-section" id="client-catalog-view"></section>
+            <section class="client-section" id="client-requests-view"></section>
+        </div>
+
+        <!-- Client Footer -->
+        <footer class="client-footer">
+            <div class="client-footer-inner">
+                <p>© 2026 SYSTEMHOME - Soluciones en Seguridad y Confort</p>
+                <p>📷 Cámaras · ❄️ Aire Acondicionado · 🔔 Alarmas · ⚡ Cercas Eléctricas · 📺 Video Portero · 🔌
+                    Electricidad · 🌐 Redes</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/modules/clients.js"></script>
+    <script src="js/modules/budgets.js"></script>
+    <script src="js/modules/workorders.js"></script>
+    <script src="js/modules/inventory.js"></script>
+    <script src="js/modules/maintenances.js"></script>
+    <script src="js/modules/client-portal.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
